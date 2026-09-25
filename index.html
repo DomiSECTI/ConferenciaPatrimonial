@@ -1,0 +1,1440 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Conferência Patrimonial — SECTI</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#123430">
+<script src="./xlsx.full.min.js"></script>
+<style>
+  :root {
+    --bg: #EEF1EF;
+    --bg-panel: #FFFFFF;
+    --bg-sunken: #E4E8E5;
+    --ink: #16241F;
+    --ink-soft: #52645C;
+    --ink-faint: #8B9A93;
+    --line: #CDD6D0;
+    --line-strong: #A9B5AD;
+    --brand: #1E4A43;
+    --brand-strong: #123430;
+    --brand-tint: #DCE7E2;
+    --gold: #A9762C;
+    --gold-tint: #F2E6D2;
+    --ok: #2E7D53;
+    --ok-tint: #DCEFE2;
+    --warn: #B4802A;
+    --warn-tint: #F5E9D4;
+    --bad: #A63F35;
+    --bad-tint: #F5DFDB;
+    --new: #33628F;
+    --new-tint: #DCE7F1;
+    --font-head: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+    --font-body: 'IBM Plex Sans', system-ui, -apple-system, Segoe UI, sans-serif;
+    --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+    --radius: 6px;
+    --shadow: 0 1px 2px rgba(18,52,48,0.06), 0 4px 16px rgba(18,52,48,0.06);
+  }
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      --bg: #12201B; --bg-panel: #17281F; --bg-sunken: #0E1913;
+      --ink: #E9EFE9; --ink-soft: #A9BAB0; --ink-faint: #74897C;
+      --line: #2A3F34; --line-strong: #3B5747;
+      --brand: #6FAF9C; --brand-strong: #8FC5B2; --brand-tint: #1D362D;
+      --gold: #D9A94F; --gold-tint: #3A2E17;
+      --ok: #6FBE8F; --ok-tint: #1B3226;
+      --warn: #E0B564; --warn-tint: #3A2E15;
+      --bad: #E08B7D; --bad-tint: #3B211D;
+      --new: #86AFD6; --new-tint: #1B2C3D;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12201B; --bg-panel: #17281F; --bg-sunken: #0E1913;
+    --ink: #E9EFE9; --ink-soft: #A9BAB0; --ink-faint: #74897C;
+    --line: #2A3F34; --line-strong: #3B5747;
+    --brand: #6FAF9C; --brand-strong: #8FC5B2; --brand-tint: #1D362D;
+    --gold: #D9A94F; --gold-tint: #3A2E17;
+    --ok: #6FBE8F; --ok-tint: #1B3226;
+    --warn: #E0B564; --warn-tint: #3A2E15;
+    --bad: #E08B7D; --bad-tint: #3B211D;
+    --new: #86AFD6; --new-tint: #1B2C3D;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  html, body { height: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body);
+    font-size: 14px; line-height: 1.5;
+    padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  button { font-family: inherit; cursor: pointer; }
+  input, select, textarea { font-family: inherit; }
+  ::selection { background: var(--brand-tint); }
+
+  .shell { display: flex; flex-direction: column; min-height: 100vh; }
+
+  header.topbar { padding: env(safe-area-inset-top, 0px) 0 0 0; background: var(--brand-strong); color: #F4F7F5; border-bottom: 3px solid var(--gold); }
+  .topbar-inner { max-width: 1440px; margin: 0 auto; padding: 16px 24px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .brandmark { display: flex; align-items: baseline; gap: 10px; flex: 1; min-width: 220px; }
+  .brandmark .crest { width: 34px; height: 34px; border: 1.5px solid rgba(244,247,245,0.55); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--font-head); font-weight: 600; font-size: 15px; flex-shrink: 0; }
+  h1.title { font-family: var(--font-head); font-weight: 600; font-size: 19px; margin: 0; letter-spacing: 0.2px; }
+  .title small { display: block; font-family: var(--font-body); font-weight: 400; font-size: 12px; color: rgba(244,247,245,0.7); margin-top: 1px; }
+  .topbar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .btn { border: 1px solid transparent; border-radius: var(--radius); padding: 8px 13px; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; transition: background .12s ease, border-color .12s ease, transform .05s ease; white-space: nowrap; }
+  .btn:active { transform: translateY(1px); }
+  .btn-ghost-dark { background: rgba(244,247,245,0.08); color: #F4F7F5; border-color: rgba(244,247,245,0.25); }
+  .btn-ghost-dark:hover { background: rgba(244,247,245,0.16); }
+  .btn-primary { background: var(--gold); color: #2B1E08; }
+  .btn-primary:hover { background: #BD8934; }
+  .btn-plain { background: var(--bg-panel); color: var(--ink); border-color: var(--line); }
+  .btn-plain:hover { background: var(--bg-sunken); }
+  .btn-outline { background: transparent; color: var(--brand); border-color: var(--brand); }
+  .btn-outline:hover { background: var(--brand-tint); }
+  .btn-danger { background: var(--bad-tint); color: var(--bad); border-color: var(--bad); }
+  .btn-danger:hover { background: var(--bad); color: #fff; }
+  .btn-sm { padding: 5px 9px; font-size: 12px; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+
+  .layout { flex: 1; max-width: 1440px; width: 100%; margin: 0 auto; display: flex; gap: 20px; padding: 20px 24px 40px; align-items: flex-start; }
+  .sidebar { width: 330px; flex-shrink: 0; display: flex; flex-direction: column; gap: 16px; position: sticky; top: 16px; }
+  @media (max-width: 900px) { .layout { flex-direction: column; } .sidebar { width: 100%; position: static; } }
+
+  .panel { background: var(--bg-panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+  .panel-pad { padding: 16px; }
+  .panel-head { padding: 12px 16px; border-bottom: 1px solid var(--line); font-family: var(--font-head); font-weight: 600; font-size: 14.5px; }
+  .panel-head .hint { font-family: var(--font-body); font-weight: 400; font-size: 11.5px; color: var(--ink-faint); display: block; margin-top: 2px; }
+
+  .scan-input { width: 100%; padding: 12px; border: 1.5px solid var(--line-strong); border-radius: var(--radius); font-family: var(--font-mono); font-size: 16px; background: var(--bg-sunken); color: var(--ink); outline: none; }
+  .scan-input:focus { border-color: var(--brand); background: var(--bg-panel); }
+  .scan-result { margin-top: 12px; }
+  .scan-empty { color: var(--ink-faint); font-size: 12.5px; padding: 10px 2px; }
+  .scan-card { border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; background: var(--bg-sunken); }
+  .scan-card .codes { font-family: var(--font-mono); font-weight: 600; font-size: 12.5px; display: flex; gap: 10px; flex-wrap: wrap; }
+  .scan-card .codes span.missing { color: var(--bad); text-decoration: line-through; }
+  .scan-card .desc { font-size: 13px; margin-top: 5px; color: var(--ink-soft); }
+  .scan-card .loc { font-size: 11.5px; color: var(--ink-faint); margin-top: 2px; }
+  .scan-actions { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+  .scan-unknown { border: 1px dashed var(--bad); background: var(--bad-tint); border-radius: var(--radius); padding: 12px; }
+  .scan-unknown .num { font-family: var(--font-mono); font-weight: 600; }
+  .scan-unknown p { margin: 4px 0 10px; font-size: 12.5px; color: var(--ink-soft); }
+
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 16px; }
+  .stat { border: 1px solid var(--line); border-radius: var(--radius); padding: 9px 10px; background: var(--bg-sunken); cursor: pointer; transition: background .12s ease, border-color .12s ease; }
+  .stat:hover { background: var(--brand-tint); border-color: var(--brand); }
+  .stat .n { font-family: var(--font-head); font-size: 20px; font-weight: 600; line-height: 1; }
+  .stat .l { font-size: 11px; color: var(--ink-soft); margin-top: 4px; }
+  .stat.ok .n { color: var(--ok); } .stat.warn .n { color: var(--warn); } .stat.bad .n { color: var(--bad); } .stat.new .n { color: var(--new); }
+
+  .progress-wrap { padding: 0 16px 16px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--ink-soft); margin-bottom: 6px; }
+  .progress-track { height: 8px; background: var(--bg-sunken); border-radius: 5px; overflow: hidden; border: 1px solid var(--line); }
+  .progress-fill { height: 100%; background: var(--brand); border-radius: 5px; transition: width .3s ease; }
+
+  .filter-group { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+  .field-label { font-size: 11.5px; color: var(--ink-soft); font-weight: 500; margin-bottom: 4px; display: block; }
+  select, .text-input { width: 100%; padding: 8px 9px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--bg-panel); color: var(--ink); font-size: 13px; }
+
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+  .toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .toolbar .search { flex: 1; min-width: 180px; }
+  .count-pill { font-size: 12px; color: var(--ink-soft); white-space: nowrap; }
+
+  .table-wrap { border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-panel); box-shadow: var(--shadow); overflow: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 760px; }
+  thead th { position: sticky; top: 0; background: var(--bg-panel); text-align: left; font-size: 11px; color: var(--ink-soft); font-weight: 600; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  tbody td { padding: 10px 12px; border-bottom: 1px solid var(--line); font-size: 13px; vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--bg-sunken); }
+  td.num { font-family: var(--font-mono); font-weight: 600; font-size: 12px; }
+  td.num .missing { color: var(--bad); text-decoration: line-through; }
+  td.num .suspect { color: var(--warn); text-decoration: underline wavy; cursor: help; }
+  td.desc { color: var(--ink); }
+  td.loc { color: var(--ink-soft); }
+
+  .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 100px; font-size: 11.5px; font-weight: 500; }
+  .badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
+  .badge.pendente { background: var(--bg-sunken); color: var(--ink-soft); border: 1px solid var(--line-strong); }
+  .badge.pendente::before { background: var(--ink-faint); }
+  .badge.localizado { background: var(--ok-tint); color: var(--ok); }
+  .badge.localizado::before { background: var(--ok); }
+  .badge.divergente { background: var(--warn-tint); color: var(--warn); }
+  .badge.divergente::before { background: var(--warn); }
+  .badge.sem_placa { background: var(--new-tint); color: var(--new); }
+  .badge.sem_placa::before { background: var(--new); }
+  .badge.nao_localizado { background: var(--bad-tint); color: var(--bad); }
+  .badge.nao_localizado::before { background: var(--bad); }
+  .chip-fora { display: inline-block; margin-left: 6px; padding: 2px 7px; border-radius: 100px; font-size: 10.5px; font-weight: 500; background: var(--new-tint); color: var(--new); }
+
+  .row-actions { display: flex; gap: 5px; }
+  .icon-btn { background: transparent; border: 1px solid var(--line); border-radius: 5px; padding: 5px 7px; font-size: 12px; color: var(--ink-soft); }
+  .icon-btn:hover { background: var(--bg-sunken); color: var(--ink); }
+
+  .empty-state { text-align: center; padding: 60px 24px; color: var(--ink-soft); }
+  .empty-state .emoji { font-size: 30px; margin-bottom: 10px; }
+  .empty-state h3 { font-family: var(--font-head); font-size: 17px; margin: 0 0 6px; color: var(--ink); }
+  .empty-state p { font-size: 13px; max-width: 400px; margin: 0 auto 16px; }
+
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(14,25,19,0.5); display: none; align-items: flex-start; justify-content: center; padding: 40px 16px; overflow-y: auto; z-index: 50; }
+  .modal-backdrop.open { display: flex; }
+  .modal { background: var(--bg-panel); border-radius: 10px; max-width: 540px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.25); border: 1px solid var(--line); }
+  .modal-head { padding: 18px 20px 14px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
+  .modal-head h2 { font-family: var(--font-head); font-size: 17px; margin: 0; font-weight: 600; }
+  .modal-head .x { background: transparent; border: none; color: var(--ink-faint); font-size: 18px; padding: 4px 8px; }
+  .modal-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 13px; max-height: 68vh; overflow-y: auto; }
+  .modal-body p.help { font-size: 12.5px; color: var(--ink-soft); margin: 0; }
+  .modal-foot { padding: 14px 20px 18px; display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--line); }
+  textarea.text-input { resize: vertical; min-height: 70px; }
+  .field { display: flex; flex-direction: column; }
+  .field-question { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+  .radio-row, .check-row { display: flex; flex-direction: column; gap: 6px; }
+  .radio-opt, .check-opt { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 7px 9px; border: 1px solid var(--line); border-radius: var(--radius); cursor: pointer; }
+  .radio-opt:hover, .check-opt:hover { background: var(--bg-sunken); }
+  .subfield { margin-top: 8px; padding-left: 2px; }
+
+  .csv-drop { border: 1.5px dashed var(--line-strong); border-radius: var(--radius); padding: 20px; text-align: center; color: var(--ink-soft); font-size: 12.5px; background: var(--bg-sunken); display: block; }
+  .csv-drop.drag { border-color: var(--brand); background: var(--brand-tint); }
+  .csv-drop input[type=file] { display: none; }
+  code.mini { font-family: var(--font-mono); background: var(--bg); padding: 1px 5px; border-radius: 3px; font-size: 11.5px; }
+
+  .toast-wrap { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 8px; z-index: 80; padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .toast { background: var(--brand-strong); color: #F4F7F5; padding: 10px 16px; border-radius: var(--radius); font-size: 13px; box-shadow: var(--shadow); border-left: 3px solid var(--gold); max-width: 320px; }
+  a { color: var(--brand); }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brandmark">
+        <div class="crest">S</div>
+        <h1 class="title">Conferência Patrimonial<small>SECTI — inventário anual (CPID)</small></h1>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost-dark" id="btnSettings">Configurações</button>
+        <button class="btn btn-ghost-dark" id="btnNewReport">Novo relatório</button>
+        <button class="btn btn-ghost-dark" id="btnImport">Importar relatório</button>
+        <button class="btn btn-primary" id="btnExport">Exportar resultado</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <aside class="sidebar">
+
+      <div class="panel">
+        <div class="panel-head">Conferir item<span class="hint">Digite ou escaneie o código 32... ou 66...</span></div>
+        <div class="panel-pad">
+          <div style="position:relative;">
+            <input type="text" class="scan-input" id="scanInput" placeholder="Nº do patrimônio (32… ou 66…)" autocomplete="off" style="padding-right:44px;">
+            <button type="button" id="scanClearBtn" title="Limpar campo" aria-label="Limpar campo" style="position:absolute; right:6px; top:50%; transform:translateY(-50%); width:32px; height:32px; border:1px solid var(--line-strong); border-radius:6px; background:var(--bg-panel); color:var(--ink-soft); font-size:16px; line-height:1; cursor:pointer;">✕</button>
+          </div>
+          <div class="scan-result" id="scanResult"><div class="scan-empty">Aguardando leitura…</div></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">Progresso</div>
+        <div class="stat-grid" id="statGrid"></div>
+        <div class="progress-wrap">
+          <div class="progress-label"><span id="progressLabel">0 de 0 conferidos</span><span id="progressPct">0%</span></div>
+          <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">Filtros</div>
+        <div class="filter-group">
+          <div class="field">
+            <label class="field-label">Setor / local de referência</label>
+            <select id="filterSetor"><option value="">Todos os setores</option></select>
+          </div>
+          <div class="field">
+            <label class="field-label">Status</label>
+            <select id="filterStatus">
+              <option value="">Todos os status</option>
+              <option value="pendente">Pendente</option>
+              <option value="localizado">Localizado</option>
+              <option value="fora_do_local">Localizado — fora do local</option>
+              <option value="nao_localizado">Não localizado</option>
+              <option value="divergente">Divergente</option>
+              <option value="sem_placa">Sem placa</option>
+              <option value="codigo_alerta">Código ausente/suspeito</option>
+              <option value="precisa_etiqueta">Aguardando etiqueta</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field-label">Data da conferência (revisar por dia)</label>
+            <select id="filterData"><option value="">Todas as datas</option></select>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-outline" id="btnAddUncatalogued" style="justify-content:center; padding:11px;">+ Registrar item não catalogado</button>
+
+    </aside>
+
+    <main class="main">
+      <div class="toolbar">
+        <input type="text" class="text-input search" id="searchInput" placeholder="Buscar por código 32, código 66, descrição ou setor…">
+        <span class="count-pill" id="countPill">0 itens</span>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:130px">Nº Patrimônio (32…)</th>
+              <th style="width:130px">Nº FAPES (66…)</th>
+              <th>Descrição</th>
+              <th style="width:150px">Setor de origem</th>
+              <th style="width:170px">Status</th>
+              <th style="width:110px">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+        <div class="empty-state" id="emptyState" style="display:none">
+          <div class="emoji">📋</div>
+          <h3>Nenhum item carregado ainda</h3>
+          <p>Importe a lista de bens (.csv, .xlsx ou .xls, com os códigos 32 e 66) para começar a conferência, ou registre um item não catalogado manualmente.</p>
+          <button class="btn btn-primary" id="emptyImportBtn">Importar relatório</button>
+        </div>
+      </div>
+    </main>
+
+  </div>
+</div>
+
+<!-- IMPORT MODAL -->
+<div class="modal-backdrop" id="modalImport">
+  <div class="modal">
+    <div class="modal-head"><h2>Importar relatório patrimonial</h2><button class="x" data-close>✕</button></div>
+    <div class="modal-body">
+      <p class="help">Aceita arquivo <code class="mini">.csv</code>, <code class="mini">.xlsx</code> ou <code class="mini">.xls</code> — pode ser a planilha oficial com os nomes de coluna originais ("Nº Patrimônio", "Nº PATRIMÔNIO FAPES...", "LOCALIZAÇÃO / REFERÊNCIA PARA BUSCA") ou o formato simplificado (<code class="mini">numero_32</code>, <code class="mini">numero_66</code>, <code class="mini">descricao</code>, <code class="mini">setor_local</code>). Se um item não tiver um dos dois códigos, isso é sinalizado automaticamente. Itens já existentes não são duplicados.</p>
+      <label class="csv-drop" id="csvDrop" for="csvFile">
+        <div id="csvDropText">Arraste o arquivo .csv, .xlsx ou .xls aqui, ou clique para escolher</div>
+        <input type="file" id="csvFile" accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel">
+      </label>
+      <div class="field">
+        <label class="field-label">Ou cole os dados diretamente (formato CSV)</label>
+        <textarea class="text-input" id="csvPaste" placeholder="numero_32,numero_66,descricao,setor_local&#10;32000000017265,66000000007366,CADEIRA COM ESPALDAR MÉDIO REGULÁVEL,1º PISO"></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-plain" data-close>Cancelar</button>
+      <button class="btn btn-primary" id="btnConfirmImport">Importar</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOCALIZADO MODAL -->
+<div class="modal-backdrop" id="modalLocate">
+  <div class="modal">
+    <div class="modal-head"><h2>Confirmar localização</h2><button class="x" data-close>✕</button></div>
+    <div class="modal-body">
+      <p class="help" id="locateItemLabel"></p>
+
+      <div class="field">
+        <div class="field-question">Os dois códigos de patrimônio estão visíveis na peça?</div>
+        <div class="radio-row">
+          <label class="radio-opt"><input type="radio" name="locateCodes" value="ambos" checked> Sim, os dois códigos conferem</label>
+          <label class="radio-opt"><input type="radio" name="locateCodes" value="falta"> Não — falta um ou os dois</label>
+        </div>
+        <div class="subfield check-row" id="locateCodesMissing" style="display:none">
+          <label class="check-opt"><input type="checkbox" id="locateFalta32"> Falta o código 32… na peça</label>
+          <label class="check-opt"><input type="checkbox" id="locateFalta66"> Falta o código 66… na peça</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-question">O bem está no setor de origem cadastrado (<span id="locateSetorOrigem"></span>)?</div>
+        <div class="radio-row">
+          <label class="radio-opt"><input type="radio" name="locateLocal" value="sim" checked> Sim, está no setor de origem</label>
+          <label class="radio-opt"><input type="radio" name="locateLocal" value="nao"> Não — foi encontrado em outro local</label>
+        </div>
+        <div class="subfield" id="locateLocalEncontradoWrap" style="display:none">
+          <label class="field-label">Local onde foi encontrado</label>
+          <select class="text-input" id="locateLocalEncontrado">
+            <option value="">Selecione o local…</option>
+          </select>
+          <div id="locateLocalOutroWrap" style="display:none; margin-top:8px;">
+            <label class="field-label">Especifique o local (não está na lista da planilha)</label>
+            <input type="text" class="text-input" id="locateLocalOutro" placeholder="Descreva o local com precisão">
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Observação (gerada automaticamente, pode editar) — <strong>obrigatória se faltar algum código</strong></label>
+        <textarea class="text-input" id="locateObs"></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-plain" data-close>Cancelar</button>
+      <button class="btn btn-primary" id="btnConfirmLocate">Confirmar — Localizado</button>
+    </div>
+  </div>
+</div>
+
+<!-- DIVERGENCE MODAL -->
+<div class="modal-backdrop" id="modalDivergent">
+  <div class="modal">
+    <div class="modal-head"><h2>Registrar divergência</h2><button class="x" data-close>✕</button></div>
+    <div class="modal-body">
+      <p class="help" id="divergentItemLabel"></p>
+      <div class="field">
+        <label class="field-label">O que foi encontrado de diferente?</label>
+        <textarea class="text-input" id="divergentNote" placeholder="Ex: descrição não confere, código ilegível, item trocado…"></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-plain" data-close>Cancelar</button>
+      <button class="btn btn-primary" id="btnConfirmDivergent">Salvar divergência</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOT FOUND MODAL -->
+<div class="modal-backdrop" id="modalNotFound">
+  <div class="modal">
+    <div class="modal-head"><h2>Marcar como não localizado</h2><button class="x" data-close>✕</button></div>
+    <div class="modal-body">
+      <p class="help" id="notFoundItemLabel"></p>
+      <div class="field">
+        <label class="field-label">Observação (opcional)</label>
+        <textarea class="text-input" id="notFoundNote" placeholder="Ex: não encontrado no setor indicado, verificar com o responsável…"></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-plain" data-close>Cancelar</button>
+      <button class="btn btn-primary" id="btnConfirmNotFound">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD UNCATALOGUED MODAL -->
+<div class="modal-backdrop" id="modalAdd">
+  <div class="modal">
+    <div class="modal-head"><h2>Registrar item não catalogado</h2><button class="x" data-close>✕</button></div>
+    <div class="modal-body">
+      <p class="help">Use isto quando encontrar fisicamente um bem que não está na lista importada. Preencha os códigos que conseguir ler na peça — se faltar algum, deixe em branco, isso é registrado automaticamente na observação.</p>
+      <div class="field">
+        <label class="field-label">Código 32… (se houver)</label>
+        <input type="text" class="text-input" id="addNum32" placeholder="Ex: 32000000017265">
+      </div>
+      <div class="field">
+        <label class="field-label">Código 66… (se houver)</label>
+        <input type="text" class="text-input" id="addNum66" placeholder="Ex: 66000000007366">
+      </div>
+      <div class="field">
+        <label class="field-label">Descrição do bem</label>
+        <input type="text" class="text-input" id="addDesc" placeholder="Ex: Mesa de reunião em L, madeira clara">
+      </div>
+      <div class="field">
+        <label class="field-label">Setor / local onde foi encontrado</label>
+        <select class="text-input" id="addLoc">
+          <option value="">Selecione o local…</option>
+        </select>
+        <div id="addLocOutroWrap" style="display:none; margin-top:8px;">
+          <label class="field-label">Especifique o local (não está na lista da planilha)</label>
+          <input type="text" class="text-input" id="addLocOutro" placeholder="Descreva o local com precisão">
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-plain" data-close>Cancelar</button>
+      <button class="btn btn-primary" id="btnConfirmAdd">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW REPORT MODAL -->
+<div class="modal-backdrop" id="modalNewReport">
+  <div class="modal">
+    <div class="modal-head"><h2>Começar novo relatório</h2><button class="x" data-close>✕</button></div>
+    <div class="modal-body">
+      <p class="help">Use isto se algo deu errado na conferência atual (arquivo errado importado, dados bagunçados) e você precisa recomeçar. Antes de apagar, um backup automático dos dados atuais é baixado em Excel (.xlsx) — nada se perde.</p>
+      <p class="help"><strong>O que vai acontecer:</strong> 1) o resultado atual é exportado automaticamente (a menos que você desmarque abaixo); 2) todos os itens são apagados desta tela; 3) você importa a lista novamente para começar do zero.</p>
+      <label class="check-opt" style="align-self:flex-start;"><input type="checkbox" id="skipBackupCheck"> Não baixar o backup — apagar direto</label>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-plain" data-close>Cancelar</button>
+      <button class="btn btn-danger" id="btnConfirmNewReport">Baixar backup e começar novo relatório</button>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-backdrop" id="modalSettings">
+  <div class="modal">
+    <div class="modal-head"><h2>Configurações</h2><button class="x" data-close>✕</button></div>
+    <div class="modal-body">
+      <div class="field">
+        <label class="field-label">Ciclo da conferência (ex: Conferência 2026)</label>
+        <input type="text" class="text-input" id="settingsCiclo" placeholder="Ex: Conferência 2026">
+      </div>
+      <div class="field">
+        <label class="field-label">Responsável pela conferência</label>
+        <input type="text" class="text-input" id="settingsResp" placeholder="Nome de quem está conferindo">
+      </div>
+      <div class="field">
+        <label class="field-label">Setores / locais de referência (separados por vírgula)</label>
+        <textarea class="text-input" id="settingsSetores" style="min-height:110px;"></textarea>
+        <p class="help" style="margin-top:6px;">Pré-carregado com as localizações da planilha CPID — Inventário 2026. Edite livremente se a lista mudar.</p>
+      </div>
+      <p class="help">Os dados desta conferência ficam salvos neste navegador. Use "Novo relatório" na barra superior para reiniciar com segurança.</p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-primary" data-close>Fechar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var STORAGE_KEY = "secti_patrimonio_v2";
+  var SETTINGS_KEY = "secti_patrimonio_settings_v2";
+
+  var DEFAULT_SETORES = ["1º PISO","1º PISO SALA CHAVES","2º PISO","ADM","CDIG","CIDIG","CIDIG/Maxwell","CIDIG/UFES","COPA 1º PISO","COPA 2º PISO","CPID","DEPÓSITO DO 2º PISO","ELEM","ELEM/UFES","ELENA","FAPES/ALMOXARIFADO/ NAA","FAPES/ALMOXARIFADO/NAA","FAPES/ALMOXARIFADO/NIADES","Ifes/CIDIG","LABENDEM","LACAR","LACAR/Item consumo","LACAR/Paulo Wagner Biogen","LACAR/Rodrigo UFES","LACAR/Servio","LACAR/Ver Comentário","LARISSA/LACAR","LARISSA/UFES (com defeito)","LSCA","Maxwell","NAA","NIADES","RECEPCIONISTA","SALA MULTIUSO","SALA VIGILANTES","SECTI","SECTI - BANCO MUNDIAL","SECTI/","SECTI/ASTEC","SECTI/GECIT","SECTI/Gecit","SECTI/HUB ES+","SECTI/SUBPI","SEGATTO","SERVIO/UFES","TERRAÇO-CIDIG","UFES","UFES/NEYVAL","Verificar Auditório / Administração","Verificar Marcelo Camargo (LABENDEM)","Verificar Segatto"];
+
+  var state = { items: [], settings: { resp: "", ciclo: "Conferência 2026", setores: DEFAULT_SETORES.slice() } };
+  var pendingDivergentId = null;
+  var pendingNotFoundId = null;
+  var pendingLocateId = null;
+
+  function load(){
+    try { var raw = localStorage.getItem(STORAGE_KEY); if (raw) state.items = JSON.parse(raw); } catch(e) { state.items = []; }
+    try { var s = localStorage.getItem(SETTINGS_KEY); if (s) state.settings = Object.assign(state.settings, JSON.parse(s)); } catch(e) {}
+  }
+  function save(){
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items)); } catch(e) { toast("Não foi possível salvar localmente — exporte o resultado para não perder o trabalho."); }
+  }
+  function saveSettings(){ try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(state.settings)); } catch(e) {} }
+
+  function uid(){ return 'i' + Math.random().toString(36).slice(2,10) + Date.now().toString(36); }
+
+  function toast(msg){
+    var wrap = document.getElementById('toastWrap');
+    var t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
+    wrap.appendChild(t);
+    setTimeout(function(){ t.style.transition = 'opacity .3s'; t.style.opacity = '0'; setTimeout(function(){ t.remove(); }, 300); }, 3400);
+  }
+
+  var STATUS_LABEL = { pendente: 'Pendente', localizado: 'Localizado', divergente: 'Divergente', nao_localizado: 'Não localizado', sem_placa: 'Sem placa' };
+
+  /* ---------- Code validation (patrimony codes have at most 15 digits) ---------- */
+  function normalizeCode(v){ return (v||'').replace(/[\s\-.]/g, ''); }
+  function analyzeCode(v){
+    if (!v) return 'ausente';
+    if (!/^[0-9]+$/.test(v)) return 'formato';
+    if (v.length > 15) return 'tamanho';
+    return null;
+  }
+  function codeIssueLabel(issue, codigo){
+    if (issue === 'ausente') return null;
+    if (issue === 'formato') return 'código ' + codigo + '… com caracteres inválidos (' + 'possível erro de exportação do Excel, ex: notação científica' + ')';
+    if (issue === 'tamanho') return 'código ' + codigo + '… com mais de 15 dígitos (verificar digitação)';
+    return null;
+  }
+
+  /* ---------- Shared row-array -> import-row mapping (used by both CSV and Excel) ---------- */
+  function normalizeHeader(s){
+    return String(s||'').toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .replace(/[^a-z0-9]+/g,' ').trim();
+  }
+
+  function findHeaderRowIndex(rows){
+    var bestIdx = 0, bestScore = -1;
+    var limit = Math.min(rows.length, 10);
+    for (var i=0;i<limit;i++){
+      var norm = rows[i].map(normalizeHeader);
+      var score = 0;
+      norm.forEach(function(h){
+        if (!h) return;
+        if (h === 'numero 32' || h === 'numero 66' || h === 'descricao' || h === 'setor local') score += 3;
+        if (h.indexOf('fapes') !== -1) score += 2;
+        if (h.indexOf('patrim') !== -1) score += 2;
+        if (h.indexOf('local') !== -1 && h.indexOf('refer') !== -1) score += 2;
+        if (h.indexOf('situa') !== -1) score += 1;
+        if (h.indexOf('observ') !== -1) score += 1;
+      });
+      if (score > bestScore) { bestScore = score; bestIdx = i; }
+    }
+    return bestScore >= 3 ? bestIdx : 0; // fall back to the first row if nothing scores as a real header
+  }
+
+  function detectColumns(header){
+    // 1st pass: exact match on the tool's simplified header names
+    var idx32 = header.indexOf('numero_32');
+    var idx66 = header.indexOf('numero_66');
+    var idxDesc = header.indexOf('descricao');
+    var idxLoc = header.indexOf('setor_local');
+
+    // 2nd pass: recognize the official spreadsheet's real column names (any language/order),
+    // for columns not already resolved above. Assign each header to at most one field.
+    var used = {}; [idx32, idx66, idxDesc, idxLoc].forEach(function(i){ if (i !== -1) used[i] = true; });
+    var norm = header.map(normalizeHeader);
+    norm.forEach(function(h, i){
+      if (used[i]) return;
+      if (idx66 === -1 && h.indexOf('fapes') !== -1) { idx66 = i; used[i] = true; return; }
+    });
+    norm.forEach(function(h, i){
+      if (used[i]) return;
+      if (idx32 === -1 && h.indexOf('patrim') !== -1 && h.indexOf('fapes') === -1 && (h.indexOf('n ') === 0 || h.indexOf('numero') !== -1 || h === 'n patrimonio' || /^n\b/.test(h))) { idx32 = i; used[i] = true; return; }
+    });
+    norm.forEach(function(h, i){
+      if (used[i]) return;
+      if (idxLoc === -1 && h.indexOf('local') !== -1 && h.indexOf('refer') !== -1) { idxLoc = i; used[i] = true; return; }
+    });
+    if (idxLoc === -1) norm.forEach(function(h, i){
+      if (used[i]) return;
+      if (h.indexOf('refer') !== -1) { idxLoc = i; used[i] = true; return; }
+    });
+    if (idxLoc === -1) norm.forEach(function(h, i){
+      if (used[i]) return;
+      if (h.indexOf('local') !== -1) { idxLoc = i; used[i] = true; return; }
+    });
+    if (idxLoc === -1) norm.forEach(function(h, i){
+      if (used[i]) return;
+      if (h.indexOf('setor') !== -1) { idxLoc = i; used[i] = true; return; }
+    });
+    norm.forEach(function(h, i){
+      if (used[i]) return;
+      if (idxDesc === -1 && (h.indexOf('descri') !== -1 || h === 'patrimonio' || h.indexOf('patrim') !== -1) && h.indexOf('fapes') === -1 && h.indexOf('situa') === -1) { idxDesc = i; used[i] = true; return; }
+    });
+
+    // Optional columns: only present in a previously exported report, used to resume progress.
+    var idxStatus = -1, idxObs = -1, idxData = -1;
+    norm.forEach(function(h, i){
+      if (used[i]) return;
+      if (idxStatus === -1 && h.indexOf('situa') !== -1) { idxStatus = i; used[i] = true; return; }
+    });
+    norm.forEach(function(h, i){
+      if (used[i]) return;
+      if (idxObs === -1 && h.indexOf('observ') !== -1) { idxObs = i; used[i] = true; return; }
+    });
+    norm.forEach(function(h, i){
+      if (used[i]) return;
+      if (idxData === -1 && h.indexOf('data') !== -1 && h.indexOf('realiza') !== -1) { idxData = i; used[i] = true; return; }
+    });
+
+    var matched = [idx32, idx66, idxDesc, idxLoc].filter(function(i){ return i !== -1; }).length;
+    if (matched === 0) {
+      // Nothing recognizable at all — treat the file as headerless, assume the tool's own column order
+      return { idx32: 0, idx66: 1, idxDesc: 2, idxLoc: 3, idxStatus: -1, idxObs: -1, idxData: -1, headerless: true };
+    }
+    return { idx32: idx32, idx66: idx66, idxDesc: idxDesc, idxLoc: idxLoc, idxStatus: idxStatus, idxObs: idxObs, idxData: idxData, headerless: false };
+  }
+
+  var STATUS_TEXT_TO_KEY = { 'pendente':'pendente', 'localizado':'localizado', 'divergente':'divergente', 'nao localizado':'nao_localizado', 'sem placa':'sem_placa' };
+  function parseStatusText(raw){
+    if (!raw) return null;
+    var t = String(raw).trim();
+    if (!t) return null;
+    var foraDoLocal = /fora do local/i.test(t);
+    var base = normalizeHeader(t.replace(/\(.*?\)/g, ''));
+    var key = STATUS_TEXT_TO_KEY[base];
+    if (!key || key === 'pendente') return null; // nothing meaningful to restore
+    return { status: key, foraDoLocal: foraDoLocal };
+  }
+
+  function arraysToImportRows(headerRow, dataRows){
+    var allRows = [headerRow].concat(dataRows);
+    var hIdx = findHeaderRowIndex(allRows);
+    var header = allRows[hIdx].map(function(h){ return String(h||'').toLowerCase().trim(); });
+    var cols = detectColumns(header);
+    var idx32 = cols.idx32, idx66 = cols.idx66, idxDesc = cols.idxDesc, idxLoc = cols.idxLoc;
+    var idxStatus = cols.idxStatus, idxObs = cols.idxObs, idxData = cols.idxData;
+    var body = cols.headerless ? allRows : allRows.slice(hIdx + 1);
+    var rows = [];
+    for (var i=0;i<body.length;i++){
+      var r = body[i];
+      var firstCell = normalizeHeader(r[0]);
+      if (firstCell === 'nota tecnica') break; // stop at the technical-note trailer of a previously exported report
+      var n32 = idx32 > -1 ? String(r[idx32]==null?'':r[idx32]).trim() : '';
+      var n66 = idx66 > -1 ? String(r[idx66]==null?'':r[idx66]).trim() : '';
+      var desc = idxDesc > -1 ? String(r[idxDesc]==null?'':r[idxDesc]).trim() : '';
+      if (!n32 && !n66 && !desc) continue;
+      var row = { numero32: n32, numero66: n66, descricao: desc, setor_local: idxLoc > -1 ? String(r[idxLoc]==null?'':r[idxLoc]).trim() : '' };
+      if (idxStatus > -1) {
+        var parsed = parseStatusText(r[idxStatus]);
+        if (parsed) {
+          row.resumeStatus = parsed.status;
+          row.resumeForaDoLocal = parsed.foraDoLocal;
+          row.resumeObs = idxObs > -1 ? String(r[idxObs]==null?'':r[idxObs]).trim() : '';
+          row.resumeData = idxData > -1 ? String(r[idxData]==null?'':r[idxData]).trim() : '';
+        }
+      }
+      rows.push(row);
+    }
+    return rows;
+  }
+
+  /* ---------- CSV parsing ---------- */
+  function sniffDelimiter(line){
+    var commas = (line.match(/,/g)||[]).length;
+    var semis = (line.match(/;/g)||[]).length;
+    return semis > commas ? ';' : ',';
+  }
+  function csvTextToArrays(text){
+    var lines = text.replace(/\r/g,'').split('\n').filter(function(l){ return l.trim().length; });
+    if (!lines.length) return [];
+    var delim = sniffDelimiter(lines[0]);
+    function splitLine(line){
+      var out = [], cur = '', inQ = false;
+      for (var i=0;i<line.length;i++){
+        var c = line[i];
+        if (c === '"') { inQ = !inQ; continue; }
+        if (c === delim && !inQ) { out.push(cur); cur=''; continue; }
+        cur += c;
+      }
+      out.push(cur);
+      return out.map(function(s){ return s.trim(); });
+    }
+    return lines.map(splitLine);
+  }
+  function parseCSV(text){
+    var arrays = csvTextToArrays(text);
+    if (!arrays.length) return [];
+    return arraysToImportRows(arrays[0], arrays.slice(1));
+  }
+
+  /* ---------- Excel (.xlsx/.xls) parsing via SheetJS, using raw values to avoid precision loss ---------- */
+  function cellToText(v){
+    if (v === null || v === undefined) return '';
+    if (typeof v === 'number') return Number.isInteger(v) ? v.toFixed(0) : String(v);
+    return String(v).trim();
+  }
+  function pickSheet(workbook){
+    var names = workbook.SheetNames;
+    var preferred = names.find(function(n){ var l = n.toLowerCase(); return l.indexOf('cpid') !== -1 && l.indexOf('2026') !== -1; });
+    if (!preferred) preferred = names.find(function(n){ var l = n.toLowerCase(); return l.indexOf('cpid') !== -1 && (l.indexOf('invent') !== -1 || l.indexOf('patrim') !== -1); });
+    if (!preferred) preferred = names.find(function(n){ var l = n.toLowerCase(); return l.indexOf('2026') !== -1 && (l.indexOf('invent') !== -1 || l.indexOf('patrim') !== -1); });
+    if (!preferred) preferred = names.find(function(n){ var l = n.toLowerCase(); return l.indexOf('invent') !== -1 || l.indexOf('patrim') !== -1; });
+    if (!preferred) preferred = names[0];
+    return preferred;
+  }
+  function parseExcelArrayBuffer(buf){
+    var workbook = XLSX.read(buf, { type: 'array' });
+    var sheetName = pickSheet(workbook);
+    var ws = workbook.Sheets[sheetName];
+    var arrays = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: '', blankrows: false });
+    var textArrays = arrays.map(function(row){ return row.map(cellToText); });
+    if (!textArrays.length) return { rows: [], sheetName: sheetName };
+    var rows = arraysToImportRows(textArrays[0], textArrays.slice(1));
+    return { rows: rows, sheetName: sheetName };
+  }
+
+  function importRows(rows){
+    var existing = {};
+    var existingComposite = {};
+    state.items.forEach(function(it){
+      if (it.numero32 && !it.alerta32) existing['32:'+it.numero32] = it;
+      if (it.numero66 && !it.alerta66) existing['66:'+it.numero66] = it;
+      if (!it.numero32 && !it.numero66 || it.alerta32 || it.alerta66) {
+        existingComposite['row:'+(it.numero32||'')+'|'+(it.numero66||'')+'|'+it.descricao+'|'+it.setor] = it;
+      }
+    });
+    var added = 0, skipped = 0, semCodigo = 0, comSuspeita = 0, retomados = 0;
+    rows.forEach(function(r){
+      var issue32now = analyzeCode(r.numero32);
+      var issue66now = analyzeCode(r.numero66);
+      var validKey32 = r.numero32 && !issue32now;
+      var validKey66 = r.numero66 && !issue66now;
+      var key32 = validKey32 ? '32:'+r.numero32 : null;
+      var key66 = validKey66 ? '66:'+r.numero66 : null;
+      var matchedExisting = (key32 && existing[key32]) || (key66 && existing[key66]);
+      if (matchedExisting) {
+        // Item already in this session. If it's still untouched (pendente) and the incoming row carries
+        // a real status (from a previously exported report), restore that progress instead of skipping blind.
+        if (matchedExisting.status === 'pendente' && r.resumeStatus) {
+          matchedExisting.status = r.resumeStatus;
+          matchedExisting.foraDoLocal = !!r.resumeForaDoLocal;
+          if (r.resumeObs) matchedExisting.obs = r.resumeObs;
+          if (r.resumeData) matchedExisting.data = r.resumeData;
+          retomados++;
+        } else {
+          skipped++;
+        }
+        return;
+      }
+      // Neither code is a trustworthy dedup key (both missing or both suspect): fall back to a full-row
+      // signature so re-importing the same broken file twice doesn't create real duplicates.
+      if (!validKey32 && !validKey66) {
+        var compositeKey = 'row:'+(r.numero32||'')+'|'+(r.numero66||'')+'|'+(r.descricao||'')+'|'+(r.setor_local||'');
+        if (existingComposite[compositeKey]) { skipped++; return; }
+      }
+      var faltaCodigo32 = !r.numero32;
+      var faltaCodigo66 = !r.numero66;
+      var issue32 = issue32now;
+      var issue66 = issue66now;
+      var obsPartes = [];
+      if (faltaCodigo32 || faltaCodigo66) {
+        semCodigo++;
+        var partes = [];
+        if (faltaCodigo32) partes.push('código 32…');
+        if (faltaCodigo66) partes.push('código 66…');
+        obsPartes.push('Cadastro de origem sem ' + partes.join(' e ') + ' informado.');
+      }
+      if (issue32 && issue32 !== 'ausente') { obsPartes.push(codeIssueLabel(issue32, '32') + '.'); comSuspeita++; }
+      if (issue66 && issue66 !== 'ausente') { obsPartes.push(codeIssueLabel(issue66, '66') + '.'); comSuspeita++; }
+      var autoObs = obsPartes.length ? '[Verificação automática do cadastro — item ainda não conferido] ' + obsPartes.join(' ') : '';
+      var item = {
+        id: uid(), numero32: r.numero32, numero66: r.numero66, descricao: r.descricao || '(sem descrição)',
+        setor: r.setor_local || '(sem setor)',
+        status: r.resumeStatus || 'pendente',
+        obs: r.resumeStatus ? (r.resumeObs || autoObs) : autoObs,
+        faltaCodigo32: faltaCodigo32, faltaCodigo66: faltaCodigo66,
+        alerta32: (issue32 && issue32 !== 'ausente') ? issue32 : null,
+        alerta66: (issue66 && issue66 !== 'ausente') ? issue66 : null,
+        foraDoLocal: r.resumeStatus ? !!r.resumeForaDoLocal : false,
+        localEncontrado: '', data: r.resumeStatus ? (r.resumeData || '') : '', origem: 'relatorio'
+      };
+      state.items.push(item);
+      if (key32) existing[key32] = item;
+      if (key66) existing[key66] = item;
+      if (!validKey32 && !validKey66) {
+        existingComposite['row:'+(item.numero32||'')+'|'+(item.numero66||'')+'|'+item.descricao+'|'+item.setor] = item;
+      }
+      added++;
+    });
+    save(); renderAll();
+    var msg = added + ' item(ns) importado(s)';
+    if (retomados) msg += ', ' + retomados + ' com progresso retomado do arquivo';
+    if (skipped) msg += ', ' + skipped + ' já existiam';
+    if (semCodigo) msg += ', ' + semCodigo + ' sem algum código';
+    if (comSuspeita) msg += ', ' + comSuspeita + ' com código suspeito';
+    toast(msg + '.');
+  }
+
+  /* ---------- Rendering ---------- */
+  function computeStats(){
+    var s = { total: state.items.length, pendente:0, localizado:0, divergente:0, nao_localizado:0, sem_placa:0, foraDoLocal:0, faltaCodigo:0, precisaEtiqueta:0 };
+    state.items.forEach(function(it){
+      s[it.status] = (s[it.status]||0) + 1;
+      if (it.foraDoLocal) s.foraDoLocal++;
+      if (it.faltaCodigo32 || it.faltaCodigo66 || it.alerta32 || it.alerta66) s.faltaCodigo++;
+      if (it.precisaEtiqueta) s.precisaEtiqueta++;
+    });
+    return s;
+  }
+
+  function renderStats(){
+    var s = computeStats();
+    var grid = document.getElementById('statGrid');
+    grid.innerHTML =
+      stat(s.localizado, 'Localizados' + (s.foraDoLocal ? ' (' + s.foraDoLocal + ' fora do local)' : ''), 'ok', 'localizado') +
+      stat(s.divergente, 'Divergentes', 'warn', 'divergente') +
+      stat(s.nao_localizado, 'Não localizados', 'bad', 'nao_localizado') +
+      stat(s.sem_placa||0, 'Sem placa', 'new', 'sem_placa') +
+      stat(s.faltaCodigo, 'Código ausente/suspeito', 'new', 'codigo_alerta') +
+      stat(s.precisaEtiqueta, 'Aguardando etiqueta', 'warn', 'precisa_etiqueta');
+    function stat(n, l, cls, filterVal){ return '<div class="stat '+cls+'" data-filter="'+filterVal+'"><div class="n">'+n+'</div><div class="l">'+l+'</div></div>'; }
+
+    var done = s.localizado + s.divergente + s.nao_localizado + (s.sem_placa||0);
+    var pct = s.total ? Math.round((done/s.total)*100) : 0;
+    document.getElementById('progressLabel').textContent = done + ' de ' + s.total + ' conferidos';
+    document.getElementById('progressPct').textContent = pct + '%';
+    document.getElementById('progressFill').style.width = pct + '%';
+
+    grid.querySelectorAll('.stat').forEach(function(tile){
+      tile.addEventListener('click', function(){
+        var val = tile.getAttribute('data-filter');
+        document.getElementById('filterStatus').value = val;
+        renderTable();
+        var tw = document.querySelector('.table-wrap');
+        if (tw) tw.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  }
+
+  function uniqueSetores(){
+    var defaults = (state.settings.setores || []).filter(function(s){ return s; });
+    var set = {};
+    defaults.forEach(function(s){ set[s] = true; });
+    state.items.forEach(function(it){ if (it.setor && it.setor !== '(sem setor)') set[it.setor] = true; });
+    var extras = Object.keys(set).filter(function(s){ return defaults.indexOf(s) === -1; }).sort();
+    return defaults.concat(extras);
+  }
+
+  function escHtml(s){ return String(s).replace(/[&<>]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]; }); }
+  function escAttr(s){ return escHtml(s).replace(/"/g,'&quot;'); }
+
+  function renderFilterOptions(){
+    var sel = document.getElementById('filterSetor');
+    var current = sel.value;
+    var setores = uniqueSetores();
+    sel.innerHTML = '<option value="">Todos os setores</option>' + setores.map(function(s){ return '<option value="'+escAttr(s)+'">'+escHtml(s)+'</option>'; }).join('');
+    if (setores.indexOf(current) !== -1) sel.value = current;
+
+    var selData = document.getElementById('filterData');
+    var currentData = selData.value;
+    var datas = {};
+    state.items.forEach(function(it){ if (it.data) datas[it.data] = true; });
+    var datasList = Object.keys(datas).sort().reverse();
+    selData.innerHTML = '<option value="">Todas as datas</option>' + datasList.map(function(d){
+      var dd = d.split('-'); var label = dd.length === 3 ? (dd[2]+'/'+dd[1]+'/'+dd[0]) : d;
+      return '<option value="'+d+'">'+label+'</option>';
+    }).join('');
+    if (datasList.indexOf(currentData) !== -1) selData.value = currentData;
+  }
+
+  function populateSetorSelect(selectEl, selectedValue){
+    var setores = uniqueSetores();
+    var options = setores.map(function(s){ return '<option value="'+escAttr(s)+'">'+escHtml(s)+'</option>'; }).join('');
+    selectEl.innerHTML = '<option value="">Selecione o local…</option>' + options + '<option value="__outro__">Outro (não está na lista)</option>';
+    if (selectedValue && setores.indexOf(selectedValue) !== -1) selectEl.value = selectedValue;
+    else if (selectedValue) { selectEl.value = '__outro__'; }
+    else selectEl.value = '';
+  }
+
+  function filteredItems(){
+    var q = document.getElementById('searchInput').value.trim().toLowerCase();
+    var fSetor = document.getElementById('filterSetor').value;
+    var fStatus = document.getElementById('filterStatus').value;
+    var fData = document.getElementById('filterData').value;
+    return state.items.filter(function(it){
+      if (fSetor && it.setor !== fSetor) return false;
+      if (fData && it.data !== fData) return false;
+      if (fStatus === 'fora_do_local') { if (!it.foraDoLocal) return false; }
+      else if (fStatus === 'codigo_alerta') { if (!(it.faltaCodigo32 || it.faltaCodigo66 || it.alerta32 || it.alerta66)) return false; }
+      else if (fStatus === 'precisa_etiqueta') { if (!it.precisaEtiqueta) return false; }
+      else if (fStatus && it.status !== fStatus) return false;
+      if (q) {
+        var qn = normalizeCode(q);
+        var hay = ((it.numero32||'') + ' ' + (it.numero66||'') + ' ' + it.descricao + ' ' + it.setor).toLowerCase();
+        var hayCodes = normalizeCode((it.numero32||'') + ' ' + (it.numero66||''));
+        if (hay.indexOf(q) === -1 && hayCodes.indexOf(qn) === -1) return false;
+      }
+      return true;
+    });
+  }
+
+  function codeCell(v, missing, alerta){
+    if (!v) return '<span class="missing">— ausente</span>';
+    if (missing) return '<span class="missing">'+escHtml(v)+'</span>';
+    if (alerta) return '<span class="suspect" title="'+escAttr(alerta === 'tamanho' ? 'Mais de 15 dígitos — verificar digitação' : 'Formato inválido — possível erro de exportação')+'">'+escHtml(v)+'</span>';
+    return escHtml(v);
+  }
+
+  function renderTable(){
+    var items = filteredItems();
+    var body = document.getElementById('tableBody');
+    document.getElementById('countPill').textContent = items.length + (items.length === 1 ? ' item' : ' itens');
+
+    if (!state.items.length) { document.getElementById('emptyState').style.display = 'block'; body.innerHTML = ''; return; }
+    document.getElementById('emptyState').style.display = 'none';
+
+    body.innerHTML = items.map(function(it){
+      var badge = '<span class="badge '+it.status+'">'+STATUS_LABEL[it.status]+'</span>';
+      if (it.foraDoLocal) badge += '<span class="chip-fora">fora do local</span>';
+      return '<tr>' +
+        '<td class="num">'+codeCell(it.numero32, it.faltaCodigo32, it.alerta32)+'</td>' +
+        '<td class="num">'+codeCell(it.numero66, it.faltaCodigo66, it.alerta66)+'</td>' +
+        '<td class="desc">'+escHtml(it.descricao)+'</td>' +
+        '<td class="loc">'+escHtml(it.setor)+'</td>' +
+        '<td>'+badge+'</td>' +
+        '<td class="row-actions">' +
+          '<button class="icon-btn" data-action="locate" data-id="'+it.id+'" title="Localizado">✓</button>' +
+          '<button class="icon-btn" data-action="divergent" data-id="'+it.id+'" title="Divergente">⚠</button>' +
+          '<button class="icon-btn" data-action="notfound" data-id="'+it.id+'" title="Não localizado">✕</button>' +
+        '</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  function renderAll(){ renderStats(); renderFilterOptions(); renderTable(); }
+
+  /* ---------- Scan / quick conference ---------- */
+  var scanInput = document.getElementById('scanInput');
+  document.getElementById('scanClearBtn').addEventListener('click', function(){
+    scanInput.value = '';
+    clearScanResult();
+    scanInput.focus();
+  });
+  scanInput.addEventListener('keydown', function(e){ if (e.key === 'Enter') handleScan(scanInput.value.trim()); });
+  scanInput.addEventListener('input', function(){
+    var v = scanInput.value.trim();
+    if (v.length >= 3) renderScanResult(v); else clearScanResult();
+  });
+  function clearScanResult(){ document.getElementById('scanResult').innerHTML = '<div class="scan-empty">Aguardando leitura…</div>'; }
+
+  /* ---------- Global scanner capture fallback ----------
+     USB/Bluetooth barcode readers act as a keyboard, but on some tablets/browsers a click doesn't
+     reliably keep focus on the scan input. This listens on the whole page for the very fast burst
+     of keystrokes a scanner sends (much faster than a person types) and routes it to the scan field
+     and search, no matter what element currently has focus — as long as the person isn't actively
+     typing into another field (description, observação, etc.), which is left untouched. */
+  var globalScanBuffer = '';
+  var globalScanLastTime = 0;
+  document.addEventListener('keydown', function(e){
+    var ae = document.activeElement;
+    if (ae === scanInput) return; // already handled by the listener above
+    var typingElsewhere = ae && (
+      ae.tagName === 'TEXTAREA' ||
+      (ae.tagName === 'INPUT' && ae.type !== 'checkbox' && ae.type !== 'radio') ||
+      ae.tagName === 'SELECT'
+    );
+    if (typingElsewhere) return; // don't hijack normal typing in other form fields
+
+    var now = Date.now();
+    if (e.key === 'Enter') {
+      if (globalScanBuffer.length >= 3) {
+        scanInput.value = globalScanBuffer;
+        handleScan(globalScanBuffer);
+      }
+      globalScanBuffer = '';
+      return;
+    }
+    if (e.key.length === 1) {
+      if (now - globalScanLastTime > 150) globalScanBuffer = ''; // gap too long: not a scanner burst, start over
+      globalScanBuffer += e.key;
+      globalScanLastTime = now;
+      scanInput.value = globalScanBuffer; // visible feedback even though this field never had focus
+    }
+  });
+
+  function findItem(numero){
+    var n = normalizeCode(numero).toLowerCase();
+    return state.items.filter(function(it){ return (it.numero32 && normalizeCode(it.numero32).toLowerCase() === n) || (it.numero66 && normalizeCode(it.numero66).toLowerCase() === n); })[0];
+  }
+
+  function renderScanResult(numero){
+    var item = findItem(numero);
+    var box = document.getElementById('scanResult');
+    if (!item) {
+      box.innerHTML =
+        '<div class="scan-unknown"><div class="num">'+escHtml(numero)+'</div>' +
+        '<p>Este código não está no relatório importado. Pode ser um bem físico sem registro correspondente na base atual.</p>' +
+        '<div class="scan-actions"><button class="btn btn-sm btn-outline" id="scanRegisterUnknown">Registrar como não catalogado</button></div></div>';
+      var b = document.getElementById('scanRegisterUnknown');
+      if (b) b.onclick = function(){ openAddModal(numero); };
+      return;
+    }
+    var badge = '<span class="badge '+item.status+'">'+STATUS_LABEL[item.status]+'</span>';
+    if (item.foraDoLocal) badge += '<span class="chip-fora">fora do local</span>';
+    box.innerHTML =
+      '<div class="scan-card">' +
+        '<div class="codes"><span'+(item.faltaCodigo32?' class="missing"':'')+'>32: '+(item.numero32||'ausente')+'</span><span'+(item.faltaCodigo66?' class="missing"':'')+'>66: '+(item.numero66||'ausente')+'</span></div>' +
+        '<div class="desc">'+escHtml(item.descricao)+'</div>' +
+        '<div class="loc">'+escHtml(item.setor)+'</div>' +
+        '<div style="margin-top:8px;">'+badge+'</div>' +
+        '<div class="scan-actions">' +
+          '<button class="btn btn-sm btn-primary" id="scanLocateBtn">Localizado ✓</button>' +
+          '<button class="btn btn-sm btn-plain" id="scanDivergentBtn">Divergente</button>' +
+          '<button class="btn btn-sm btn-plain" id="scanNotFoundBtn">Não localizado</button>' +
+        '</div>' +
+      '</div>';
+    document.getElementById('scanLocateBtn').onclick = function(){ openLocateModal(item.id); };
+    document.getElementById('scanDivergentBtn').onclick = function(){ openDivergentModal(item.id); };
+    document.getElementById('scanNotFoundBtn').onclick = function(){ openNotFoundModal(item.id); };
+  }
+  function handleScan(numero){ if (numero) renderScanResult(numero); }
+
+  /* ---------- Table row actions ---------- */
+  document.getElementById('tableBody').addEventListener('click', function(e){
+    var btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    var id = btn.getAttribute('data-id');
+    var action = btn.getAttribute('data-action');
+    if (action === 'locate') openLocateModal(id);
+    if (action === 'divergent') openDivergentModal(id);
+    if (action === 'notfound') openNotFoundModal(id);
+  });
+
+  /* ---------- Localizado modal ---------- */
+  function findById(id){ return state.items.filter(function(i){ return i.id === id; })[0]; }
+
+  function getLocateLocalValue(){
+    var sel = document.getElementById('locateLocalEncontrado').value;
+    if (sel === '__outro__') return document.getElementById('locateLocalOutro').value.trim();
+    return sel;
+  }
+
+  function rebuildLocateObs(){
+    var it = findById(pendingLocateId);
+    if (!it) return;
+    var partes = [];
+    var codesMissing = document.querySelector('input[name="locateCodes"]:checked').value === 'falta';
+    var f32 = codesMissing && document.getElementById('locateFalta32').checked;
+    var f66 = codesMissing && document.getElementById('locateFalta66').checked;
+    if (f32 || f66) {
+      var faltando = [];
+      if (f32) faltando.push('código 32…');
+      if (f66) faltando.push('código 66…');
+      partes.push('Peça sem ' + faltando.join(' e ') + ' visível fisicamente.');
+    }
+    var localNao = document.querySelector('input[name="locateLocal"]:checked').value === 'nao';
+    if (localNao) {
+      var lugar = getLocateLocalValue();
+      partes.push('Localizado fora do setor de origem (' + it.setor + ')' + (lugar ? ', encontrado em: ' + lugar : '') + '.');
+    }
+    document.getElementById('locateObs').value = partes.join(' ');
+  }
+
+  function openLocateModal(id){
+    var it = findById(id);
+    if (!it) return;
+    pendingLocateId = id;
+    document.getElementById('locateItemLabel').textContent = (it.numero32||'—') + ' / ' + (it.numero66||'—') + ' — ' + it.descricao;
+    document.getElementById('locateSetorOrigem').textContent = it.setor;
+    document.querySelector('input[name="locateCodes"][value="ambos"]').checked = true;
+    document.getElementById('locateCodesMissing').style.display = 'none';
+    document.getElementById('locateFalta32').checked = !!it.faltaCodigo32;
+    document.getElementById('locateFalta66').checked = !!it.faltaCodigo66;
+    document.querySelector('input[name="locateLocal"][value="sim"]').checked = true;
+    document.getElementById('locateLocalEncontradoWrap').style.display = 'none';
+    populateSetorSelect(document.getElementById('locateLocalEncontrado'), it.localEncontrado || '');
+    document.getElementById('locateLocalOutroWrap').style.display = (document.getElementById('locateLocalEncontrado').value === '__outro__') ? 'block' : 'none';
+    document.getElementById('locateLocalOutro').value = (document.getElementById('locateLocalEncontrado').value === '__outro__') ? (it.localEncontrado || '') : '';
+    document.getElementById('locateObs').value = it.obs || '';
+    openModal('modalLocate');
+  }
+
+  document.querySelectorAll('input[name="locateCodes"]').forEach(function(r){
+    r.addEventListener('change', function(){
+      var falta = document.querySelector('input[name="locateCodes"]:checked').value === 'falta';
+      document.getElementById('locateCodesMissing').style.display = falta ? 'flex' : 'none';
+      rebuildLocateObs();
+    });
+  });
+  document.getElementById('locateFalta32').addEventListener('change', rebuildLocateObs);
+  document.getElementById('locateFalta66').addEventListener('change', rebuildLocateObs);
+  document.querySelectorAll('input[name="locateLocal"]').forEach(function(r){
+    r.addEventListener('change', function(){
+      var nao = document.querySelector('input[name="locateLocal"]:checked').value === 'nao';
+      document.getElementById('locateLocalEncontradoWrap').style.display = nao ? 'block' : 'none';
+      rebuildLocateObs();
+    });
+  });
+  document.getElementById('locateLocalEncontrado').addEventListener('change', function(){
+    document.getElementById('locateLocalOutroWrap').style.display = (this.value === '__outro__') ? 'block' : 'none';
+    rebuildLocateObs();
+  });
+  document.getElementById('locateLocalOutro').addEventListener('input', rebuildLocateObs);
+
+  document.getElementById('btnConfirmLocate').onclick = function(){
+    var it = findById(pendingLocateId);
+    if (!it) return;
+    var codesMissing = document.querySelector('input[name="locateCodes"]:checked').value === 'falta';
+    var f32 = codesMissing && document.getElementById('locateFalta32').checked;
+    var f66 = codesMissing && document.getElementById('locateFalta66').checked;
+    var obsVal = document.getElementById('locateObs').value.trim();
+    if ((f32 || f66) && !obsVal) {
+      toast('Observação obrigatória quando falta algum dos códigos.');
+      return;
+    }
+    it.faltaCodigo32 = f32;
+    it.faltaCodigo66 = f66;
+    var localNao = document.querySelector('input[name="locateLocal"]:checked').value === 'nao';
+    it.foraDoLocal = localNao;
+    it.localEncontrado = localNao ? getLocateLocalValue() : '';
+    it.obs = document.getElementById('locateObs').value.trim();
+    it.status = 'localizado';
+    it.data = new Date().toISOString().slice(0,10);
+    save(); renderAll();
+    closeModal('modalLocate');
+    toast('Item marcado como localizado.');
+    scanInput.value=''; clearScanResult(); scanInput.focus();
+  };
+
+  /* ---------- Divergent modal ---------- */
+  function openDivergentModal(id){
+    var it = findById(id); if (!it) return;
+    pendingDivergentId = id;
+    document.getElementById('divergentItemLabel').textContent = (it.numero32||'—') + ' / ' + (it.numero66||'—') + ' — ' + it.descricao;
+    document.getElementById('divergentNote').value = it.obs || '';
+    openModal('modalDivergent');
+  }
+  document.getElementById('btnConfirmDivergent').onclick = function(){
+    var it = findById(pendingDivergentId);
+    if (it) {
+      it.status = 'divergente';
+      it.obs = document.getElementById('divergentNote').value.trim();
+      it.data = new Date().toISOString().slice(0,10);
+      save(); renderAll();
+      toast('Divergência registrada.');
+    }
+    closeModal('modalDivergent');
+    scanInput.value=''; clearScanResult(); scanInput.focus();
+  };
+
+  /* ---------- Not found modal ---------- */
+  function openNotFoundModal(id){
+    var it = findById(id); if (!it) return;
+    pendingNotFoundId = id;
+    document.getElementById('notFoundItemLabel').textContent = (it.numero32||'—') + ' / ' + (it.numero66||'—') + ' — ' + it.descricao;
+    document.getElementById('notFoundNote').value = it.obs || '';
+    openModal('modalNotFound');
+  }
+  document.getElementById('btnConfirmNotFound').onclick = function(){
+    var it = findById(pendingNotFoundId);
+    if (it) {
+      it.status = 'nao_localizado';
+      it.obs = document.getElementById('notFoundNote').value.trim();
+      it.data = new Date().toISOString().slice(0,10);
+      save(); renderAll();
+      toast('Marcado como não localizado.');
+    }
+    closeModal('modalNotFound');
+  };
+
+  /* ---------- Add uncatalogued item ---------- */
+  function openAddModal(prefill){
+    document.getElementById('addNum32').value = (prefill && prefill.indexOf('32') === 0) ? prefill : '';
+    document.getElementById('addNum66').value = (prefill && prefill.indexOf('66') === 0) ? prefill : '';
+    document.getElementById('addDesc').value = '';
+    populateSetorSelect(document.getElementById('addLoc'), '');
+    document.getElementById('addLocOutroWrap').style.display = 'none';
+    document.getElementById('addLocOutro').value = '';
+    openModal('modalAdd');
+  }
+  document.getElementById('addLoc').addEventListener('change', function(){
+    document.getElementById('addLocOutroWrap').style.display = (this.value === '__outro__') ? 'block' : 'none';
+  });
+  document.getElementById('btnAddUncatalogued').onclick = function(){ openAddModal(); };
+  document.getElementById('emptyImportBtn').onclick = function(){ openModal('modalImport'); };
+
+  document.getElementById('btnConfirmAdd').onclick = function(){
+    var n32 = document.getElementById('addNum32').value.trim();
+    var n66 = document.getElementById('addNum66').value.trim();
+    var desc = document.getElementById('addDesc').value.trim();
+    var locSel = document.getElementById('addLoc').value;
+    var loc = locSel === '__outro__' ? document.getElementById('addLocOutro').value.trim() : locSel;
+    if (!desc) { toast('Descreva o bem antes de salvar — a descrição é obrigatória quando não há placa/código para identificar o item.'); return; }
+    var precisaEtiqueta = !n32 && !n66;
+    var faltaPartes = [];
+    if (!n32) faltaPartes.push('código 32…');
+    if (!n66) faltaPartes.push('código 66…');
+    var obs = 'Item encontrado fisicamente sem registro correspondente no relatório importado.';
+    if (precisaEtiqueta) {
+      obs += ' Sem placa/código de patrimônio (nem 32… nem 66…) — identificado apenas pela descrição. Necessário gerar e afixar etiqueta assim que possível.';
+    } else if (faltaPartes.length) {
+      obs += ' Sem ' + faltaPartes.join(' e ') + ' identificável na peça.';
+    }
+    var item = {
+      id: uid(), numero32: n32, numero66: n66, descricao: desc, setor: loc || '(sem setor)',
+      status: 'sem_placa', obs: obs, faltaCodigo32: !n32, faltaCodigo66: !n66, precisaEtiqueta: precisaEtiqueta,
+      foraDoLocal: false, localEncontrado: '', data: new Date().toISOString().slice(0,10), origem: 'campo'
+    };
+    state.items.push(item);
+    save(); renderAll();
+    closeModal('modalAdd');
+    toast(precisaEtiqueta ? 'Item sem placa registrado — pendente de geração de etiqueta.' : 'Item não catalogado registrado com status "Sem placa".');
+  };
+
+  /* ---------- Import ---------- */
+  document.getElementById('btnImport').onclick = function(){ openModal('modalImport'); };
+  var csvDrop = document.getElementById('csvDrop');
+  var csvFile = document.getElementById('csvFile');
+  var pendingFileText = null;
+  var pendingExcelRows = null;
+  csvDrop.addEventListener('dragover', function(e){ e.preventDefault(); csvDrop.classList.add('drag'); });
+  csvDrop.addEventListener('dragleave', function(){ csvDrop.classList.remove('drag'); });
+  csvDrop.addEventListener('drop', function(e){ e.preventDefault(); csvDrop.classList.remove('drag'); var f = e.dataTransfer.files[0]; if (f) readFile(f); });
+  csvFile.addEventListener('change', function(){ if (csvFile.files[0]) readFile(csvFile.files[0]); });
+
+  function isExcelFile(f){ return /\.(xlsx|xls)$/i.test(f.name); }
+
+  document.getElementById('csvPaste').addEventListener('input', function(){
+    if (pendingFileText !== null || pendingExcelRows !== null) {
+      pendingFileText = null; pendingExcelRows = null;
+      document.getElementById('csvDropText').textContent = 'Arraste o arquivo .csv, .xlsx ou .xls aqui, ou clique para escolher';
+      csvFile.value = '';
+    }
+  });
+
+  function readFile(f){
+    pendingFileText = null; pendingExcelRows = null;
+    document.getElementById('csvDropText').textContent = 'Lendo ' + f.name + '…';
+    if (isExcelFile(f)) {
+      if (typeof XLSX === 'undefined') { toast('Não foi possível carregar o leitor de Excel. Tente novamente em alguns segundos.'); return; }
+      var reader = new FileReader();
+      reader.onload = function(e){
+        try {
+          var result = parseExcelArrayBuffer(e.target.result);
+          pendingExcelRows = result.rows;
+          document.getElementById('csvDropText').textContent = 'Arquivo selecionado: ' + f.name + ' (aba: "' + result.sheetName + '")';
+        } catch(err) {
+          toast('Não foi possível ler esse arquivo Excel.');
+          document.getElementById('csvDropText').textContent = 'Arraste o arquivo .csv, .xlsx ou .xls aqui, ou clique para escolher';
+        }
+      };
+      reader.onerror = function(){ toast('Não foi possível ler o arquivo.'); };
+      reader.readAsArrayBuffer(f);
+    } else {
+      var reader2 = new FileReader();
+      reader2.onload = function(e){
+        pendingFileText = e.target.result;
+        document.getElementById('csvDropText').textContent = 'Arquivo selecionado: ' + f.name;
+      };
+      reader2.onerror = function(){ toast('Não foi possível ler o arquivo.'); };
+      reader2.readAsText(f, 'UTF-8');
+    }
+  }
+
+  document.getElementById('btnConfirmImport').onclick = function(){
+    var rows;
+    if (pendingExcelRows) {
+      rows = pendingExcelRows;
+    } else {
+      var text = pendingFileText || document.getElementById('csvPaste').value;
+      if (!text || !text.trim()) { toast('Selecione um arquivo (.csv/.xlsx/.xls) ou cole os dados em CSV.'); return; }
+      rows = parseCSV(text);
+    }
+    if (!rows.length) { toast('Não foi possível reconhecer linhas válidas nesse arquivo.'); return; }
+    importRows(rows);
+    pendingFileText = null;
+    pendingExcelRows = null;
+    document.getElementById('csvPaste').value = '';
+    document.getElementById('csvDropText').textContent = 'Arraste o arquivo .csv, .xlsx ou .xls aqui, ou clique para escolher';
+    csvFile.value = '';
+    closeModal('modalImport');
+  };
+
+  /* ---------- Export (real .xlsx workbook) ---------- */
+  var EXPORT_HEADERS = ['Nº do Patrimônio','Patrimônio','Nº do Patrimônio FAPES','Localização/Referência para Busca','Situação da Conferência','Observações','Data da Realização da Conferência'];
+
+  function buildExportRows(){
+    return state.items.map(function(it){
+      var situacao = STATUS_LABEL[it.status] + (it.foraDoLocal ? ' (fora do local de origem)' : '');
+      return [it.numero32||'', it.descricao, it.numero66||'', it.setor, situacao, it.obs||'', it.data||''];
+    });
+  }
+
+  function inferYear(){
+    var m = /\b(20\d{2})\b/.exec(state.settings.ciclo || '');
+    return m ? m[1] : String(new Date().getFullYear());
+  }
+
+  function buildXlsxBlob(){
+    var hoje = new Date().toLocaleDateString('pt-BR');
+    var titulo = 'INVENTÁRIO DE PATRIMÔNIOS SECTI — ' + inferYear();
+
+    var dataRows = buildExportRows();
+    var s = computeStats();
+
+    var notaTecnica = [
+      [],
+      ['NOTA TÉCNICA'],
+      ['Relatório gerado em:', hoje],
+      ['Responsável pela conferência:', state.settings.resp || '(não informado)'],
+      ['Ciclo da conferência:', state.settings.ciclo || '(não informado)'],
+      [],
+      ['Resumo da conferência:'],
+      ['Total de itens:', s.total],
+      ['Localizados:', s.localizado],
+      ['Divergentes:', s.divergente],
+      ['Não localizados:', s.nao_localizado],
+      ['Sem placa:', s.sem_placa||0],
+      ['Pendentes (ainda não conferidos):', s.total - s.localizado - s.divergente - s.nao_localizado - (s.sem_placa||0)]
+    ];
+
+    var aoa = [[titulo], []].concat([EXPORT_HEADERS]).concat(dataRows).concat(notaTecnica);
+    var ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws['!cols'] = [{wch:18},{wch:50},{wch:20},{wch:28},{wch:26},{wch:40},{wch:16}];
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Conferência');
+    var out = XLSX.write(wb, { type: 'array', bookType: 'xlsx' });
+    return new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  }
+
+  async function downloadXlsx(filename){
+    if (typeof XLSX === 'undefined') { toast('Não foi possível carregar o gerador de Excel. Recarregue a página com internet pelo menos uma vez.'); return false; }
+    try {
+      var blob = buildXlsxBlob();
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+      return true;
+    } catch(e) {
+      toast('Não foi possível gerar o download (' + (e && e.message ? e.message : 'erro desconhecido') + ').');
+      return false;
+    }
+  }
+  document.getElementById('btnExport').onclick = async function(){
+    if (!state.items.length) { toast('Não há itens para exportar ainda.'); return; }
+    var today = new Date().toISOString().slice(0,10);
+    var ok = await downloadXlsx('conferencia-patrimonial-secti-' + today + '.xlsx');
+    if (ok) toast('Exportação gerada — ' + state.items.length + ' itens.');
+  };
+
+  /* ---------- New report (safety reset) ---------- */
+  document.getElementById('btnNewReport').onclick = function(){
+    document.getElementById('skipBackupCheck').checked = false;
+    document.getElementById('btnConfirmNewReport').textContent = 'Baixar backup e começar novo relatório';
+    openModal('modalNewReport');
+  };
+  document.getElementById('skipBackupCheck').addEventListener('change', function(){
+    document.getElementById('btnConfirmNewReport').textContent = this.checked ? 'Começar novo relatório sem backup' : 'Baixar backup e começar novo relatório';
+  });
+  document.getElementById('btnConfirmNewReport').onclick = async function(){
+    var skip = document.getElementById('skipBackupCheck').checked;
+    if (state.items.length && !skip) {
+      var today = new Date().toISOString().slice(0,10);
+      var ok = await downloadXlsx('backup-antes-de-novo-relatorio-' + today + '.xlsx');
+      if (!ok) {
+        toast('Backup não foi baixado — o relatório não foi apagado. Tente de novo, ou marque "não baixar backup" se quiser prosseguir mesmo assim.');
+        return;
+      }
+    }
+    state.items = [];
+    save(); renderAll();
+    closeModal('modalNewReport');
+    toast('Novo relatório iniciado. Importe a lista de bens para começar.');
+  };
+
+  /* ---------- Settings ---------- */
+  document.getElementById('btnSettings').onclick = function(){
+    document.getElementById('settingsCiclo').value = state.settings.ciclo || '';
+    document.getElementById('settingsResp').value = state.settings.resp || '';
+    document.getElementById('settingsSetores').value = (state.settings.setores || []).join(', ');
+    openModal('modalSettings');
+  };
+  document.getElementById('settingsCiclo').addEventListener('change', function(){ state.settings.ciclo = this.value.trim(); saveSettings(); });
+  document.getElementById('settingsResp').addEventListener('change', function(){ state.settings.resp = this.value.trim(); saveSettings(); });
+  document.getElementById('settingsSetores').addEventListener('change', function(){
+    state.settings.setores = this.value.split(',').map(function(s){ return s.trim(); }).filter(function(s){ return s; });
+    saveSettings(); renderAll();
+  });
+
+  /* ---------- Filters / search ---------- */
+  document.getElementById('searchInput').addEventListener('input', renderTable);
+  document.getElementById('filterSetor').addEventListener('change', renderTable);
+  document.getElementById('filterStatus').addEventListener('change', renderTable);
+  document.getElementById('filterData').addEventListener('change', renderTable);
+
+  /* ---------- Modal plumbing ---------- */
+  function openModal(id){ document.getElementById(id).classList.add('open'); }
+  function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+  document.querySelectorAll('[data-close]').forEach(function(b){ b.addEventListener('click', function(){ b.closest('.modal-backdrop').classList.remove('open'); }); });
+  document.querySelectorAll('.modal-backdrop').forEach(function(bd){ bd.addEventListener('click', function(e){ if (e.target === bd) bd.classList.remove('open'); }); });
+
+  /* ---------- Init ---------- */
+  load();
+  renderAll();
+  scanInput.focus();
+})();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('./service-worker.js').catch(function(err){
+      console.warn('Falha ao registrar service worker (app ainda funciona online):', err);
+    });
+  });
+}
+</script>
+</body>
+</html>
